@@ -2,297 +2,214 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Word Guess Game</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 40px;
-      background: #f9f9f9;
+      margin-top: 50px;
     }
-    #game {
-      margin-top: 40px;
-    }
-    .word-container {
+    .boxes {
       display: flex;
       justify-content: center;
-      gap: 10px;
       margin: 20px 0;
     }
-    .letter-box {
-      width: 60px;
-      height: 60px;
-      font-size: 32px;
-      font-weight: bold;
-      text-transform: uppercase;
+    .box {
+      width: 50px;
+      height: 50px;
+      border: 2px solid #000;
+      margin: 5px;
+      font-size: 24px;
       text-align: center;
-      border: 2px solid #333;
-      border-radius: 8px;
+      text-transform: uppercase;
     }
     .correct {
-      background-color: #90ee90; /* pale green */
-    }
-    #meaning {
-      margin: 20px;
-      font-size: 20px;
-    }
-    #scoreboard {
-      font-size: 18px;
-      margin: 15px 0;
+      background-color: palegreen;
     }
     #message {
-      margin: 15px;
-      font-size: 22px;
+      margin: 20px;
+      font-size: 20px;
       font-weight: bold;
-      color: green;
     }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
+    #meaning {
+      margin: 10px;
       font-size: 18px;
-      cursor: pointer;
-      border: none;
-      border-radius: 6px;
-      background: #007bff;
-      color: white;
     }
-    button:hover {
-      background: #0056b3;
+    #scoreboard {
+      margin: 15px;
+      font-size: 18px;
+    }
+    #nextBtn, #resetBtn {
+      display: none;
+      margin: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #instructions {
+      margin-top: 40px;
+      font-size: 16px;
+      text-align: left;
+      display: inline-block;
     }
   </style>
 </head>
 <body>
   <h1>Word Guess Game</h1>
-  <div id="scoreboard">
-    Score: <span id="score">0</span> | Chances left: <span id="chances">3</span>
-  </div>
-  <div id="game"></div>
-  <h2>💡 Meaning:</h2> <div id="meaning"></div>
+  <div id="meaning"></div>
+  <div class="boxes" id="boxes"></div>
   <div id="message"></div>
-  <script>
-    const words = [
-  { word: "absorb", meaning: "To take in or soak up a substance." },
-  { word: "active", meaning: "Engaged in action; full of movement." },
-  { word: "admire", meaning: "To regard with respect or warm approval." },
-  { word: "advice", meaning: "Guidance or recommendations offered." },
-  { word: "afford", meaning: "To have enough money to pay for something." },
-  { word: "almost", meaning: "Very nearly, but not exactly." },
-  { word: "amount", meaning: "A quantity of something." },
-  { word: "animal", meaning: "A living creature that is not a plant." },
-  { word: "answer", meaning: "A reply or solution to a question." },
-  { word: "anyone", meaning: "Any person at all." },
-  { word: "appear", meaning: "To become visible or noticeable." },
-  { word: "around", meaning: "Located or situated nearby." },
-  { word: "author", meaning: "A person who writes books or articles." },
-  { word: "better", meaning: "Of higher quality or more desirable." },
-  { word: "bottle", meaning: "A container for liquids, usually glass or plastic." },
-  { word: "branch", meaning: "A part of a tree growing from the trunk." },
-  { word: "bright", meaning: "Giving out or reflecting a lot of light." },
-  { word: "broken", meaning: "Damaged and no longer working." },
-  { word: "camera", meaning: "A device used to capture photographs or videos." },
-  { word: "cancel", meaning: "To decide something will not happen." },
-  { word: "candle", meaning: "A stick of wax with a wick for burning." },
-  { word: "cannot", meaning: "Unable to do something." },
-  { word: "castle", meaning: "A large building with strong walls, often historical." },
-  { word: "center", meaning: "The middle point of something." },
-  { word: "chance", meaning: "An opportunity or possibility." },
-  { word: "charge", meaning: "To ask for payment; to attack." },
-  { word: "choice", meaning: "An act of selecting among options." },
-  { word: "circle", meaning: "A round shape with no beginning or end." },
-  { word: "client", meaning: "A customer or person using services." },
-  { word: "closed", meaning: "Not open." },
-  { word: "coffee", meaning: "A drink made from roasted coffee beans." },
-  { word: "common", meaning: "Something occurring often or widely shared." },
-  { word: "copper", meaning: "A reddish-brown metal used in wires." },
-  { word: "couple", meaning: "Two people or things considered together." },
-  { word: "create", meaning: "To bring something into existence." },
-  { word: "credit", meaning: "Borrowed money or acknowledgment of work." },
-  { word: "custom", meaning: "A tradition or usual practice." },
-  { word: "damage", meaning: "Harm that reduces value or usefulness." },
-  { word: "danger", meaning: "The possibility of harm or injury." },
-  { word: "dealer", meaning: "A person who buys and sells goods." },
-  { word: "debate", meaning: "A formal discussion on a topic." },
-  { word: "degree", meaning: "A unit of measurement or academic award." },
-  { word: "demand", meaning: "A strong request or need." },
-  { word: "desert", meaning: "A dry, barren sandy area." },
-  { word: "design", meaning: "A plan or drawing of something before it’s built." },
-  { word: "detail", meaning: "An individual feature or fact." },
-  { word: "device", meaning: "A piece of equipment created for a purpose." },
-  { word: "dinner", meaning: "The main meal of the day." },
-  { word: "doctor", meaning: "A person qualified to treat illnesses." },
-  { word: "double", meaning: "Twice as much or twice in size." },
-  { word: "dragon", meaning: "A mythical creature that breathes fire." },
-  { word: "driver", meaning: "A person who operates a vehicle." },
-  { word: "editor", meaning: "A person who prepares written work for publishing." },
-  { word: "effect", meaning: "A change caused by an action." },
-  { word: "effort", meaning: "Use of physical or mental energy." },
-  { word: "energy", meaning: "The strength or power to do work." },
-  { word: "enjoy", meaning: "To take pleasure in something." },
-  { word: "escape", meaning: "To break free from control or confinement." },
-  { word: "family", meaning: "A group of related people." },
-  { word: "famous", meaning: "Well known by many people." },
-  { word: "father", meaning: "A male parent." },
-  { word: "figure", meaning: "A number, shape, or a person’s outline." },
-  { word: "flight", meaning: "The act of flying." },
-  { word: "flower", meaning: "The blossom of a plant." },
-  { word: "forest", meaning: "A large area covered with trees." },
-  { word: "formal", meaning: "Following rules, proper or official." },
-  { word: "future", meaning: "The time yet to come." },
-  { word: "garden", meaning: "A place where plants or flowers are grown." },
-  { word: "gather", meaning: "To collect or bring together." },
-  { word: "gentle", meaning: "Kind and not rough." },
-  { word: "golden", meaning: "Made of or colored like gold." },
-  { word: "ground", meaning: "The solid surface of the earth." },
-  { word: "growth", meaning: "The process of increasing in size." },
-  { word: "health", meaning: "The state of physical or mental well-being." },
-  { word: "hidden", meaning: "Kept out of sight; concealed." },
-  { word: "honore", meaning: "To show respect or recognition." },
-  { word: "income", meaning: "Money received for work or investment." },
-  { word: "island", meaning: "Land surrounded by water." },
-  { word: "junior", meaning: "Lower in rank or younger in age." },
-  { word: "ladder", meaning: "A structure used for climbing." },
-  { word: "launch", meaning: "To start or set something in motion." },
-  { word: "leader", meaning: "A person in charge or guiding others." },
-  { word: "little", meaning: "Small in size or amount." },
-  { word: "market", meaning: "A place where goods are bought and sold." },
-  { word: "master", meaning: "A skilled person or one in control." },
-  { word: "memory", meaning: "The ability to recall past experiences." },
-  { word: "minute", meaning: "A unit of time; very small." },
-  { word: "modern", meaning: "Relating to the present or recent times." },
-  { word: "mother", meaning: "A female parent." },
-  { word: "nation", meaning: "A large group of people united by government." },
-  { word: "nature", meaning: "The physical world and living things." },
-  { word: "office", meaning: "A place where business is conducted." },
-  { word: "option", meaning: "A choice among alternatives." },
-  { word: "parent", meaning: "A person’s mother or father." },
-  { word: "people", meaning: "Human beings in general." },
-  { word: "planet", meaning: "A celestial body orbiting a star." },
-  { word: "player", meaning: "A person who participates in a game or sport." },
-  { word: "police", meaning: "The civil force maintaining public order." },
-  { word: "public", meaning: "Open to or shared by everyone." },
-  { word: "record", meaning: "A documented account or highest achievement." }
-];
+  <div id="scoreboard"></div>
+  <button id="nextBtn">Next Word</button>
+  <button id="resetBtn">Reset Game</button>
 
-    let score = 0;
-    let chances = 3;
-    let usedWords = [];
+  <div id="instructions">
+    <h3>How to Play</h3>
+    <ul>
+      <li>💡 Guess the word based on the given meaning.</li>
+      <li>Type directly in the boxes. Use arrow keys to move.</li>
+      <li>Press Enter after filling all boxes to submit.</li>
+      <li>You have 3 chances in total. After that, game is over.</li>
+      <li>Correct letters stay green, wrong ones reset.</li>
+    </ul>
+  </div>
+
+  <script>
+    let words = []; 
     let currentWordIndex = 0;
+    let score = 0;
+    let chancesLeft = 3;
+
+    async function loadWords() {
+      const response = await fetch('words.json');
+      words = await response.json();
+      startGame();
+    }
 
     function startGame() {
-      if (usedWords.length === words.length) {
-        endGame("🎉 You guessed all words!");
+      score = 0;
+      chancesLeft = 3;
+      currentWordIndex = 0;
+      shuffle(words);
+      showWord();
+      updateScoreboard();
+      document.getElementById('resetBtn').style.display = "none";
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function showWord() {
+      if (currentWordIndex >= words.length) {
+        document.getElementById("message").textContent = "🎉 You guessed all words! Well done!";
+        document.getElementById("resetBtn").style.display = "inline-block";
+        document.getElementById("meaning").textContent = "";
         return;
       }
-      // pick a new word not used yet
-      do {
-        currentWordIndex = Math.floor(Math.random() * words.length);
-      } while (usedWords.includes(currentWordIndex));
 
-      const gameDiv = document.getElementById("game");
-      const meaningDiv = document.getElementById("meaning");
-      const messageDiv = document.getElementById("message");
-      gameDiv.innerHTML = "";
-      messageDiv.textContent = "";
+      const current = words[currentWordIndex];
+      document.getElementById("meaning").textContent = "💡 Meaning: " + current.meaning;
 
-      const word = words[currentWordIndex].word.toUpperCase();
-      const container = document.createElement("div");
-      container.className = "word-container";
-
-      for (let i = 0; i < word.length; i++) {
+      const boxes = document.getElementById("boxes");
+      boxes.innerHTML = "";
+      for (let i = 0; i < current.word.length; i++) {
         const input = document.createElement("input");
         input.maxLength = 1;
-        input.className = "letter-box";
+        input.classList.add("box");
         input.dataset.index = i;
-        container.appendChild(input);
+        input.addEventListener("input", handleInput);
+        input.addEventListener("keydown", handleNavigation);
+        boxes.appendChild(input);
       }
-
-      gameDiv.appendChild(container);
-      meaningDiv.textContent = words[currentWordIndex].meaning;
-
-      const boxes = container.querySelectorAll(".letter-box");
-      boxes[0].focus();
-
-      boxes.forEach((box, idx) => {
-        box.addEventListener("input", () => {
-          box.value = box.value.toUpperCase();
-          if (box.value && idx < boxes.length - 1) {
-            boxes[idx + 1].focus();
-          }
-        });
-        box.addEventListener("keydown", (e) => {
-          if (e.key === "ArrowLeft" && idx > 0) {
-            boxes[idx - 1].focus();
-          } else if (e.key === "ArrowRight" && idx < boxes.length - 1) {
-            boxes[idx + 1].focus();
-          } else if (e.key === "Backspace" && !box.value && idx > 0) {
-            boxes[idx - 1].focus();
-          } else if (e.key === "Enter") {
-            checkGuess(word, boxes, messageDiv);
-          }
-        });
-      });
+      boxes.firstChild.focus();
+      document.getElementById("message").textContent = "";
+      document.getElementById("nextBtn").style.display = "none";
     }
 
-    function checkGuess(word, boxes, messageDiv) {
-      let guess = "";
-      boxes.forEach((box, idx) => {
-        if (box.value === word[idx]) {
-          box.classList.add("correct");
-        } else {
-          box.classList.remove("correct");
-        }
-        guess += box.value;
-      });
+    function handleInput(e) {
+      e.target.value = e.target.value.toUpperCase();
+      if (e.target.value && e.target.nextSibling) {
+        e.target.nextSibling.focus();
+      }
+    }
 
-      if (guess === word) {
-        messageDiv.textContent = "Yayy! You guessed it correct 🎉";
+    function handleNavigation(e) {
+      const index = parseInt(e.target.dataset.index);
+      if (e.key === "ArrowLeft" && e.target.previousSibling) {
+        e.target.previousSibling.focus();
+      }
+      if (e.key === "ArrowRight" && e.target.nextSibling) {
+        e.target.nextSibling.focus();
+      }
+      if (e.key === "Backspace" && !e.target.value && e.target.previousSibling) {
+        e.target.previousSibling.focus();
+      }
+      if (e.key === "Enter") {
+        checkWord();
+      }
+    }
+
+    function checkWord() {
+      const current = words[currentWordIndex];
+      const inputs = document.querySelectorAll(".box");
+      let guessedWord = "";
+      inputs.forEach(input => guessedWord += input.value.toUpperCase());
+
+      if (guessedWord === current.word) {
+        inputs.forEach(input => {
+          input.classList.add("correct");
+          input.disabled = true;
+        });
+        document.getElementById("message").textContent = "✅ Yayy! You guessed it correct!";
         score++;
-        document.getElementById("score").textContent = score;
-        usedWords.push(currentWordIndex);
-
-        // disable inputs
-        boxes.forEach((box) => box.disabled = true);
-
-        // show Next button
-        const nextBtn = document.createElement("button");
-        nextBtn.textContent = "Next Word";
-        nextBtn.onclick = () => startGame();
-        messageDiv.appendChild(document.createElement("br"));
-        messageDiv.appendChild(nextBtn);
+        document.getElementById("nextBtn").style.display = "inline-block";
       } else {
-        chances--;
-        document.getElementById("chances").textContent = chances;
-        if (chances <= 0) {
-          endGame("Game Over!");
+        chancesLeft--;
+        if (chancesLeft <= 0) {
+          document.getElementById("message").textContent = "❌ Game Over!";
+          document.getElementById("meaning").textContent = "";
+          disableAllInputs();
+          document.getElementById("resetBtn").style.display = "inline-block";
+        } else {
+          let correctCount = 0;
+          inputs.forEach((input, i) => {
+            if (input.value.toUpperCase() === current.word[i]) {
+              input.classList.add("correct");
+              input.disabled = true;
+              correctCount++;
+            } else {
+              input.value = "";
+            }
+          });
+          document.getElementById("message").textContent = `❌ Wrong guess! Try again.`;
         }
       }
+      updateScoreboard();
     }
 
-    function endGame(message) {
-      const gameContainer = document.getElementById("game");
-      const messageDiv = document.getElementById("message");
-      const meaningDiv = document.getElementById("meaning");
-
-      gameContainer.innerHTML = "";
-      messageDiv.textContent = message;
-      meaningDiv.textContent = ""; // hide meaning on game over
-
-      const resetBtn = document.createElement("button");
-      resetBtn.textContent = "Reset Game";
-      resetBtn.onclick = () => {
-        score = 0;
-        chances = 3;
-        usedWords = [];
-        document.getElementById("score").textContent = score;
-        document.getElementById("chances").textContent = chances;
-        startGame();
-      };
-      messageDiv.appendChild(document.createElement("br"));
-      messageDiv.appendChild(resetBtn);
+    function disableAllInputs() {
+      document.querySelectorAll(".box").forEach(input => input.disabled = true);
     }
 
-    // start first game
-    startGame();
+    function nextWord() {
+      currentWordIndex++;
+      showWord();
+    }
+
+    function updateScoreboard() {
+      document.getElementById("scoreboard").textContent =
+        `Score: ${score} | Chances Left: ${chancesLeft}`;
+    }
+
+    document.getElementById("nextBtn").addEventListener("click", nextWord);
+    document.getElementById("resetBtn").addEventListener("click", startGame);
+
+    loadWords();
   </script>
 </body>
 </html>
