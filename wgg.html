@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Word Guess Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #f9f9f9;
+    }
+    #game {
+      margin-top: 40px;
+    }
+    .word-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .letter-box {
+      width: 60px;
+      height: 60px;
+      font-size: 32px;
+      font-weight: bold;
+      text-transform: uppercase;
+      text-align: center;
+      border: 2px solid #333;
+      border-radius: 8px;
+    }
+    .correct {
+      background-color: #90ee90; /* pale green */
+    }
+    #meaning {
+      margin: 20px;
+      font-size: 20px;
+    }
+    #scoreboard {
+      font-size: 18px;
+      margin: 15px 0;
+    }
+    #message {
+      margin: 15px;
+      font-size: 22px;
+      font-weight: bold;
+      color: green;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background: #007bff;
+      color: white;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Word Guess Game</h1>
+  <div id="scoreboard">
+    Score: <span id="score">0</span> | Chances left: <span id="chances">3</span>
+  </div>
+  <div id="game"></div>
+  <div id="meaning"></div>
+  <div id="message"></div>
+  <script>
+    const words = [
+      { word: "planet", meaning: "A celestial body orbiting a star." },
+      { word: "rocket", meaning: "A vehicle used for space travel." },
+      { word: "forest", meaning: "A large area covered with trees." },
+    ];
+
+    let score = 0;
+    let chances = 3;
+    let usedWords = [];
+    let currentWordIndex = 0;
+
+    function startGame() {
+      if (usedWords.length === words.length) {
+        endGame("🎉 You guessed all words!");
+        return;
+      }
+      // pick a new word not used yet
+      do {
+        currentWordIndex = Math.floor(Math.random() * words.length);
+      } while (usedWords.includes(currentWordIndex));
+
+      const gameDiv = document.getElementById("game");
+      const meaningDiv = document.getElementById("meaning");
+      const messageDiv = document.getElementById("message");
+      gameDiv.innerHTML = "";
+      messageDiv.textContent = "";
+
+      const word = words[currentWordIndex].word.toUpperCase();
+      const container = document.createElement("div");
+      container.className = "word-container";
+
+      for (let i = 0; i < word.length; i++) {
+        const input = document.createElement("input");
+        input.maxLength = 1;
+        input.className = "letter-box";
+        input.dataset.index = i;
+        container.appendChild(input);
+      }
+
+      gameDiv.appendChild(container);
+      meaningDiv.textContent = words[currentWordIndex].meaning;
+
+      const boxes = container.querySelectorAll(".letter-box");
+      boxes[0].focus();
+
+      boxes.forEach((box, idx) => {
+        box.addEventListener("input", () => {
+          box.value = box.value.toUpperCase();
+          if (box.value && idx < boxes.length - 1) {
+            boxes[idx + 1].focus();
+          }
+        });
+        box.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowLeft" && idx > 0) {
+            boxes[idx - 1].focus();
+          } else if (e.key === "ArrowRight" && idx < boxes.length - 1) {
+            boxes[idx + 1].focus();
+          } else if (e.key === "Backspace" && !box.value && idx > 0) {
+            boxes[idx - 1].focus();
+          } else if (e.key === "Enter") {
+            checkGuess(word, boxes, messageDiv);
+          }
+        });
+      });
+    }
+
+    function checkGuess(word, boxes, messageDiv) {
+      let guess = "";
+      boxes.forEach((box, idx) => {
+        if (box.value === word[idx]) {
+          box.classList.add("correct");
+        } else {
+          box.classList.remove("correct");
+        }
+        guess += box.value;
+      });
+
+      if (guess === word) {
+        messageDiv.textContent = "Yayy! You guessed it correct 🎉";
+        score++;
+        document.getElementById("score").textContent = score;
+        usedWords.push(currentWordIndex);
+
+        // disable inputs
+        boxes.forEach((box) => box.disabled = true);
+
+        // show Next button
+        const nextBtn = document.createElement("button");
+        nextBtn.textContent = "Next Word";
+        nextBtn.onclick = () => startGame();
+        messageDiv.appendChild(document.createElement("br"));
+        messageDiv.appendChild(nextBtn);
+      } else {
+        chances--;
+        document.getElementById("chances").textContent = chances;
+        if (chances <= 0) {
+          endGame("Game Over!");
+        }
+      }
+    }
+
+    function endGame(message) {
+      const gameContainer = document.getElementById("game");
+      const messageDiv = document.getElementById("message");
+      const meaningDiv = document.getElementById("meaning");
+
+      gameContainer.innerHTML = "";
+      messageDiv.textContent = message;
+      meaningDiv.textContent = ""; // hide meaning on game over
+
+      const resetBtn = document.createElement("button");
+      resetBtn.textContent = "Reset Game";
+      resetBtn.onclick = () => {
+        score = 0;
+        chances = 3;
+        usedWords = [];
+        document.getElementById("score").textContent = score;
+        document.getElementById("chances").textContent = chances;
+        startGame();
+      };
+      messageDiv.appendChild(document.createElement("br"));
+      messageDiv.appendChild(resetBtn);
+    }
+
+    // start first game
+    startGame();
+  </script>
+</body>
+</html>
